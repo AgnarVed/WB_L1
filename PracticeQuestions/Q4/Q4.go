@@ -22,6 +22,7 @@ func main() {
 	n := 5
 	var err error
 	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
 
 	if len(os.Args) == 2 {
 		n, err = strconv.Atoi(os.Args[1])
@@ -46,9 +47,9 @@ func main() {
 		chars := 'a' + rune(generator.Intn('z'-'a'+1))
 		select {
 		case s := <-signals: // при получении сигнала завершаем работу всех воркеров
+			fmt.Printf("\nProgramm has been stopped by signal %d\n", s)
 			workers.stopWork()
-			fmt.Printf("Programm has been stopped by signal %d\n", s)
-			//os.Exit(0)
+
 			return
 		default: // посылаем данные постоянно
 			workers.sendData(num)
@@ -86,18 +87,16 @@ func (w *Workers) work(ctx context.Context) {
 				// при получении Done пишем о завершении
 				case <-ctx.Done():
 					fmt.Println("Worker ", id+1, " stopped")
-					//os.Exit(0) // выход из программы
 					return
 				}
 			}
 			w.wg.Done()
-			os.Exit(0)
 		}(i)
 	}
 }
 
 func (w *Workers) stopWork() {
-	w.cancel()  // ctx отмены
+	//w.cancel()  // ctx отмены
 	w.wg.Wait() // wg
 	close(w.ch) // закрываем канал
 	fmt.Println("All workers have been stopped")
