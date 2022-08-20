@@ -46,7 +46,6 @@ func main() {
 		generator := rand.New(rand.NewSource(time.Now().UnixNano()))
 		for {
 			num := generator.Intn(100)
-			//chars := 'a' + rune(generator.Intn('z'-'a'+1))
 			select {
 			case <-ctx.Done(): // при получении сигнала завершаем работу всех воркеров
 				fmt.Printf("Programm has been stopped by signal\n")
@@ -54,7 +53,6 @@ func main() {
 				return
 			default: // посылаем данные постоянно
 				workersCh <- num
-				//workersCh <- string(chars)
 			}
 			time.Sleep(time.Millisecond * 300)
 		}
