@@ -11,7 +11,7 @@ import (
 
 func main() {
 	fmt.Println(unique("abcd"))
-	fmt.Println(unique("abCdefAaf"))
+	fmt.Println(unique("abCdefD"))
 	fmt.Println(unique("aabcd"))
 }
 
