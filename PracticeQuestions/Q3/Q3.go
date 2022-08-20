@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -11,9 +12,9 @@ import (
 
 func main() {
 	arr := []int64{2, 4, 6, 8, 10}
-	WithMutex(arr)  // конкурентно с мьютексом
+	//WithMutex(arr)  // конкурентно с мьютексом
 	WithAtomic(arr) // конкурентно с атомик
-	WithoutAny(arr) // неконкурентно
+	//WithoutAny(arr) // неконкурентно
 }
 
 func (s *Summ) AddValue(input int64) {
@@ -39,7 +40,7 @@ func WithMutex(arr []int64) int64 {
 		go res.AddValue(val)
 	}
 	time.Sleep(2 * time.Second)
-	//fmt.Println(res.GetValue())
+	fmt.Println(res.GetValue())
 	return res.GetValue()
 }
 
@@ -49,14 +50,14 @@ func WithAtomic(arr []int64) int64 {
 	wg.Add(len(arr))
 	for _, val := range arr {
 
-		go func(val int64) {
+		go func(val int64, wg *sync.WaitGroup) {
 			inc := val * val
 			atomic.AddInt64(&res, inc)
 			wg.Done()
-		}(val)
+		}(val, &wg)
 	}
 	wg.Wait()
-	//fmt.Println(res)
+	fmt.Println(res)
 	return res
 }
 
@@ -66,6 +67,6 @@ func WithoutAny(arr []int64) int64 {
 		val := arr[i]
 		res += val * val
 	}
-	//fmt.Println(res)
+	fmt.Println(res)
 	return res
 }
