@@ -2,37 +2,50 @@ package main
 
 import (
 	"fmt"
-	"os"
+	"sync"
 )
 
+// Разработать конвейер чисел.
+// Даны два канала: в первый пишутся числа (x) из массива, во второй — результат операции x*2,
+// после чего данные из второго канала должны выводиться в stdout.
+
 func main() {
-	intCh := make(chan int)
-	sl := []int{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}
-	for i := 0; i < len(sl); i++ {
-		intCh <- sl[i]
+	inCh := make(chan int)
+	outCh := make(chan int)
+	//sl := []int64{2, 4, 6, 8, 10}
+	sl := make([]int, 100)
+	for i := range sl {
+		sl[i] = i + 1
 	}
-	close(intCh)
-
-	go doSmth(intCh)
-
-	for {
-		num, opened := <-intCh
-		if !opened {
-			break
-		}
-		fmt.Fprintf(os.Stdout, "\nNumber is: %d", num)
-	}
+	wg := sync.WaitGroup{}
+	wg.Add(3)
+	go go1(inCh, sl, &wg)
+	go multy(inCh, outCh, &wg)
+	go printResult(outCh, &wg)
+	wg.Wait()
+	fmt.Println("Finished")
 
 }
 
-func doSmth(ch chan int) chan int {
+func go1(ch chan int, sl []int, wg *sync.WaitGroup) {
 	defer close(ch)
-	result := make(chan int)
-	var sl []int
-	sl = append(sl, <-ch)
-	for i := 0; i < len(sl); i++ {
-		result <- sl[i] * 2
+	for _, val := range sl {
+		ch <- val
 	}
+	wg.Done()
+}
 
-	return result
+func multy(ch, ch2 chan int, wg *sync.WaitGroup) {
+	defer close(ch2)
+	for val := range ch {
+		ch2 <- val * 2
+	}
+	wg.Done()
+}
+
+func printResult(ch chan int, wg *sync.WaitGroup) {
+	for val := range ch {
+		fmt.Println("Result is: ", val)
+	}
+	wg.Done()
 }
