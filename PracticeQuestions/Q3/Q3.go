@@ -12,9 +12,10 @@ import (
 
 func main() {
 	arr := []int64{2, 4, 6, 8, 10}
-	//WithMutex(arr)  // конкурентно с мьютексом
-	WithAtomic(arr) // конкурентно с атомик
-	//WithoutAny(arr) // неконкурентно
+	WithMutex(arr)    // конкурентно с мьютексом
+	WithAtomic(arr)   // конкурентно с атомик
+	WithoutAny(arr)   // неконкурентно
+	WithoutAnyGO(arr) // конкурентно, но криво
 }
 
 func (s *Summ) AddValue(input int64) {
@@ -69,4 +70,22 @@ func WithoutAny(arr []int64) int64 {
 	}
 	fmt.Println(res)
 	return res
+}
+
+func WithoutAnyGO(arr []int64) int64 {
+	wg := sync.WaitGroup{}
+
+	var res int64
+	for _, val := range arr {
+		wg.Add(1)
+		go func() {
+			res += val * val
+			wg.Done()
+		}()
+
+	}
+	wg.Wait()
+	fmt.Println(res)
+	return res
+
 }
