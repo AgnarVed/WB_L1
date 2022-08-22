@@ -20,9 +20,12 @@ import (
 // someFunc()
 // }
 
-var justString string
+// может возникнуть проблема взятия строки ( если текст не UTF-8, то по байтам бука может не поместиться, отсюда неверно взятое значение)
 
-const letterBytes = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+var justString string
+var justString2 string
+
+const letterBytes = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZπ"
 const (
 	letterIdxBits = 6                    // 6 bits to represent a letter index
 	letterIdxMask = 1<<letterIdxBits - 1 // All 1-bits, as many as letterIdxBits
@@ -31,6 +34,8 @@ const (
 
 var src = rand.NewSource(time.Now().UnixNano())
 
+// createHugeString создает большую строку с размером size (можно было и обычным способом сгенерировать,
+// нашел на stackoverflow этот вариант
 func createHugeString(size int) string {
 	b := make([]byte, size)
 	for i, cache, remain := size-1, src.Int63(), letterIdxMax; i >= 0; {
@@ -48,12 +53,13 @@ func createHugeString(size int) string {
 }
 
 func someFunc() {
-	v := createHugeString(1 << 10)
-
-	last := 100
+	//v := createHugeString(1 << 10)
+	v := "abcdeπfghijkπlmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZπ"
+	runes := []rune(v)
+	last := 25
 	switch {
-	case last <= len(v)-1:
-		justString = v[:100]
+	case last < len(v):
+		justString = string(runes[:10])
 	default:
 		log.Println("Выход за пределы строки")
 	}
@@ -65,6 +71,7 @@ func someFunc() {
 	fmt.Println("Size in bytes ", int(unsafe.Sizeof(justString))+len(justString))
 	fmt.Println()
 	fmt.Println("v = ", v)
+	fmt.Println("len(v) = ", len(v))
 	fmt.Println("cap(v) ", cap([]rune(v)))
 	fmt.Printf("%p\n", &v)
 	fmt.Println("Size in bytes ", int(unsafe.Sizeof(v))+len(v))
@@ -72,15 +79,12 @@ func someFunc() {
 
 func main() {
 
-	str := "avsdawefasdfdsfaec"
-	nstr := str[:5]
-	fmt.Println(nstr)
-	fmt.Println(str)
-	fmt.Println(len(nstr))
-	fmt.Println(&nstr)
-	fmt.Println(&str)
-	//someFunc()
-	//fmt.Println(justString)
-	//fmt.Println(len(justString))
-	//fmt.Println(createHugeString(1 << 20))
+	str := "apple_π!"
+	subStr := str[0:7]
+	fmt.Println(subStr)
+
+	for i, val := range str {
+		fmt.Printf("index: %d value: %d char %s\n", i, val, string(val))
+	}
+	someFunc()
 }
